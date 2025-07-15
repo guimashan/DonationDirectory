@@ -1,6 +1,6 @@
 // 請將此替換為你部署的 Google Apps Script API 的 URL。
 // 這個 URL 將用於處理試算表查詢。
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwrUuEoToGAdXIzheAEOuMPYlE-fHkxwV2RVymBof1w365PNfNugViNx2FqSVmBsjie/exec'; 
+const APPS_SCRIPT_URL = '1jt500QSTd0FsY6juvAwEVpGIrYdsV9xNwuOlKG0ZBaM'; 
 
 // 取得網頁上的 HTML 元素參考
 const nameInput = document.getElementById('nameInput');
