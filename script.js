@@ -1,73 +1,49 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <title>線上捐款查詢</title>
-    <style>
-        body { font-family: '微軟正黑體', sans-serif; background-color: #f6deb9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background-color: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
-        h1 { color: #4e167d; font-size: 1.4em; }
-        input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1em; }
-        button { width: 100%; padding: 12px; background-color: #4e167d; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
-        button:hover { background-color: #350f55; }
-        #resultArea { margin-top: 20px; }
-        /* 每一筆紀錄的卡片樣式 */
-        .record-card { background-color: #fffcf5; border: 1px solid #f6deb9; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
-        .name-label { font-weight: bold; color: #333; }
-        .amount-label { color: #0056b3; font-weight: bold; }
-        .error { color: #dc3545; padding: 10px; font-weight: bold; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>紫皇天乙真慶宮</h1>
-        <p style="color: #777;">建宮福田會 線上查詢系統</p>
-        
-        <input type="text" id="nameInput" placeholder="請輸入姓名或企業名稱">
-        <button id="queryBtn">立即查詢</button>
-        
-        <div id="resultArea"></div>
-    </div>
+// --- 設定區塊 ---
+const SPREADSHEET_ID = '1jt500QSTd0FsY6juvAwEVpGIrYdsV9xNwuOlKG0ZBaM';
+const SHEET_NAME = '工作表1';
 
-    <script>
-        const nameInput = document.getElementById('nameInput');
-        const queryBtn = document.getElementById('queryBtn');
-        const resultArea = document.getElementById('resultArea');
+// 當瀏覽網頁網址時執行
+function doGet() {
+  return HtmlService.createHtmlOutputFromFile('index')
+      .setTitle('紫皇天乙真慶宮 - 線上查詢')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+}
 
-        queryBtn.onclick = function() {
-            const name = nameInput.value.trim();
-            if (!name) {
-                resultArea.innerHTML = '<div class="error">請輸入姓名</div>';
-                return;
-            }
+// 供前端呼叫的查詢函式
+function searchSheet(name) {
+  let results = []; // 用來存放所有符合的紀錄
+  
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(SHEET_NAME);
+    
+    // 取得所有資料 (二維陣列)
+    const data = sheet.getDataRange().getValues();
+    const searchName = name.trim();
 
-            resultArea.innerHTML = '查詢中...';
+    // 從第 2 列開始跑 (索引 1)，檢查每一列
+    for (let i = 1; i < data.length; i++) {
+      let rowName = data[i][0].toString().trim(); // 第一欄姓名
+      let rowAmount = data[i][1];                // 第二欄金額
 
-            // 呼叫後端 searchSheet 函式
-            google.script.run
-                .withSuccessHandler(function(result) {
-                    resultArea.innerHTML = ''; // 清空
-                    
-                    if (result.found) {
-                        // 【關鍵】用迴圈把 list 裡面的每一筆資料都印出來
-                        result.list.forEach(function(item) {
-                            const card = document.createElement('div');
-                            card.className = 'record-card';
-                            card.innerHTML = `
-                                <span class="name-label">${item.name}</span>
-                                <span class="amount-label">${Number(item.amount).toLocaleString()} 元</span>
-                            `;
-                            resultArea.appendChild(card);
-                        });
-                    } else {
-                        resultArea.innerHTML = `<div class="error">查無「${name}」的紀錄</div>`;
-                    }
-                })
-                .withFailureHandler(function() {
-                    resultArea.innerHTML = '<div class="error">系統連線失敗</div>';
-                })
-                .searchSheet(name);
-        };
-    </script>
-</body>
-</html>
+      // 如果姓名符合，就把這筆資料塞進 results 陣列
+      if (rowName === searchName) {
+        results.push({
+          name: data[i][0].toString(),
+          amount: rowAmount
+        });
+      }
+    }
+    
+    // 回傳結果物件給前端
+    return { 
+      found: results.length > 0, 
+      list: results 
+    };
+    
+  } catch (error) {
+    console.error("錯誤：" + error.message);
+    return { found: false, error: "伺服器錯誤" };
+  }
+}
