@@ -2,58 +2,32 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>線上捐款查詢</title>
+    <title>龜馬山紫皇天乙真慶宮 - 線上查詢</title>
     <style>
         body { font-family: '微軟正黑體', sans-serif; background-color: #fcf1d7; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .container { background-color: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
-
-		h1 {
-		    color: #4e167d;    /* 設定文字顏色為紫色 */
-		    margin-top: 0;     /* 調整上方間距，讓排版更緊湊 */
-		    margin-bottom: 10px;
-		}
-	
-        /* --- 這是新增的圖片樣式 --- */
-        .main-logo {
-            width: 50%;       /* 寬度隨容器縮放 */
-            max-width: 300px;  /* 限制最大寬度，避免電腦上看太大 */
-            height: auto;      /* 高度依比例自動縮放 */
-            margin-bottom: 15px;
-            display: block;    /* 讓圖片成為區塊元素 */
-            margin-left: auto; /* 置中 */
-            margin-right: auto;
-        }
-
-        input { width: 40%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1em; }
-        button { width: 40%; padding: 12px; background-color: #4e167d; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
+        h1 { color: #4e167d; margin-top: 0; margin-bottom: 10px; }
+        .main-logo { width: 70%; max-width: 300px; height: auto; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto; }
+        input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1em; }
+        button { width: 100%; padding: 12px; background-color: #4e167d; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
         button:hover { background-color: #350f55; }
-        
         #resultArea { margin-top: 20px; }
         .record-card { background-color: #fffcf5; border: 1px solid #f6deb9; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
         .name-label { font-weight: bold; color: #333; }
         .amount-label { color: #0056b3; font-weight: bold; }
         .error { color: #dc3545; padding: 10px; font-weight: bold; }
-        
-        .date-info { color: #000; font-size: 0.85em; margin-top: 20px; border-top: 1px solid #eee; pt: 15px; }
+        .date-info { color: #000; font-size: 0.85em; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
     </style>
 </head>
-
 <body>
     <div class="container">
+        <img src="logo.png" alt="紫皇天乙真慶宮" class="main-logo">
         <h1>建宮福田會</h1>
-        <p style="color: #000000;">線上查詢系統</p>
-        
-        <input type="text" id="nameInput" placeholder="請輸入'信眾姓名'或'企業名稱'">
+        <p style="color: #666; font-weight: bold;">線上查詢系統</p>
+        <input type="text" id="nameInput" placeholder="請輸入姓名或企業名稱">
         <button id="queryBtn">立即查詢</button>
-        
         <div id="resultArea"></div>
-
-		<p style="color: #000; font-size: 1em; margin-top: 20px;">
-        (捐款芳名錄：民國112年1月1日至114年12月31日止)	
-    </p>
-	<div><p style="color: #fff;"> . </p></div>
-	<div><p style="color: #fff;"> . </p></div>
-	<img src="logo_final_outline-01.png" alt="紫皇天乙真慶宮" class="main-logo">	
+        <div class="date-info">(捐款芳名錄：民國112年1月1日至114年12月31日止)</div>
     </div>
 
     <script>
@@ -61,41 +35,37 @@
         const queryBtn = document.getElementById('queryBtn');
         const resultArea = document.getElementById('resultArea');
 
+        // 【在此處貼上您的 Apps Script URL】
+        const GAS_URL = "https://script.google.com/macros/s/你的ID/exec"; 
+
         queryBtn.onclick = function() {
             const name = nameInput.value.trim();
             if (!name) {
                 resultArea.innerHTML = '<div class="error">請輸入姓名</div>';
                 return;
             }
-
             resultArea.innerHTML = '查詢中...';
 
-            // 呼叫後端 searchSheet 函式
-            google.script.run
-                .withSuccessHandler(function(result) {
-                    resultArea.innerHTML = ''; // 清空
-                    
+            // 改用 fetch 方式，這是在 GitHub 上執行的關鍵
+            fetch(`${GAS_URL}?name=${encodeURIComponent(name)}`)
+                .then(response => response.json())
+                .then(result => {
+                    resultArea.innerHTML = '';
                     if (result.found) {
-                        // 【關鍵】用迴圈把 list 裡面的每一筆資料都印出來
-                        result.list.forEach(function(item) {
+                        result.list.forEach(item => {
                             const card = document.createElement('div');
                             card.className = 'record-card';
-                            card.innerHTML = `
-                                <span class="name-label">${item.name}</span>
-                                <span class="amount-label">${Number(item.amount).toLocaleString()} 元</span>
-                            `;
+                            card.innerHTML = `<span class="name-label">${item.name}</span><span class="amount-label">${Number(item.amount).toLocaleString()} 元</span>`;
                             resultArea.appendChild(card);
                         });
                     } else {
                         resultArea.innerHTML = `<div class="error">查無「${name}」的紀錄</div>`;
                     }
                 })
-                .withFailureHandler(function() {
-                    resultArea.innerHTML = '<div class="error">系統連線失敗</div>';
-                })
-                .searchSheet(name);
+                .catch(err => {
+                    resultArea.innerHTML = '<div class="error">連線失敗，請檢查網址</div>';
+                });
         };
     </script>
-
 </body>
 </html>
