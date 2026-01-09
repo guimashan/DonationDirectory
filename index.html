@@ -6,30 +6,46 @@
     <style>
         body { font-family: '微軟正黑體', sans-serif; background-color: #f6deb9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .container { background-color: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
-        h1 { color: #4e167d; font-size: 1.4em; }
+        
+        /* --- 這是新增的圖片樣式 --- */
+        .main-logo {
+            width: 100%;       /* 寬度隨容器縮放 */
+            max-width: 300px;  /* 限制最大寬度，避免電腦上看太大 */
+            height: auto;      /* 高度依比例自動縮放 */
+            margin-bottom: 15px;
+            display: block;    /* 讓圖片成為區塊元素 */
+            margin-left: auto; /* 置中 */
+            margin-right: auto;
+        }
+
         input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1em; }
         button { width: 100%; padding: 12px; background-color: #4e167d; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
         button:hover { background-color: #350f55; }
+        
         #resultArea { margin-top: 20px; }
-        /* 每一筆紀錄的卡片樣式 */
         .record-card { background-color: #fffcf5; border: 1px solid #f6deb9; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
         .name-label { font-weight: bold; color: #333; }
         .amount-label { color: #0056b3; font-weight: bold; }
         .error { color: #dc3545; padding: 10px; font-weight: bold; }
+        
+        .date-info { color: #000; font-size: 0.85em; margin-top: 20px; border-top: 1px solid #eee; pt: 15px; }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h1>紫皇天乙真慶宮</h1>
-        <p style="color: #666;">建宮福田會 線上查詢系統</p>
+        <h1>建宮福田會</h1>
+        <p style="color: #999;"> 線上查詢系統</p>
         
         <input type="text" id="nameInput" placeholder="請輸入姓名或企業名稱">
         <button id="queryBtn">立即查詢</button>
         
         <div id="resultArea"></div>
 
-		<p style="color: #000;">(捐款芳名錄：民國112年1月1日至114年12月31日止)</p>
+		<p style="color: #000; font-size: 0.8em; margin-top: 20px;">
+        (捐款芳名錄：民國112年1月1日至114年12月31日止)	
+    </p>
+	<img src="logo_final_outline-01.png" alt="紫皇天乙真慶宮" class="main-logo">	
     </div>
 
     <script>
