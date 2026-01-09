@@ -3,12 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>龜馬山紫皇天乙真慶宮 - 建宮福田會 線上查詢</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <style>
         body { font-family: '微軟正黑體', sans-serif; background-color: #fcf1d7; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .container { background-color: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
         h1 { color: #4e167d; margin-top: 0; margin-bottom: 10px; }
         .main-logo { width: 50%; max-width: 300px; height: auto; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto; }
-        input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1em; }
+        input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1em; outline: none; }
+        input:focus { border-color: #4e167d; }
         button { width: 100%; padding: 12px; background-color: #4e167d; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
         button:hover { background-color: #350f55; }
         #resultArea { margin-top: 20px; }
@@ -22,9 +24,10 @@
 <body>
     <div class="container">
         <img src="GMS_logo.png" alt="紫皇天乙真慶宮" class="main-logo">
-        <p> </p>
-        <p style="color: #4e167d; font-weight: bold;">建宮福田會 線上查詢</p>
-        <input type="text" id="nameInput" placeholder="請輸入信眾姓名或企業名稱>
+        <p style="color: #4e167d; font-weight: bold; font-size: 1.2em;">建宮福田會 線上查詢</p>
+        
+        <input type="text" id="nameInput" placeholder="請輸入信眾姓名或企業名稱">
+        
         <button id="queryBtn">立即查詢</button>
         <div id="resultArea"></div>
         <div class="date-info">(捐款芳名錄：民國112年1月1日至114年12月31日止)</div>
@@ -35,7 +38,7 @@
         const queryBtn = document.getElementById('queryBtn');
         const resultArea = document.getElementById('resultArea');
 
-        // 【在此處貼上您的 Apps Script URL】
+        // 【重要：請確認此網址是否已換成您自己的 Apps Script 網址】
         const GAS_URL = "https://script.google.com/macros/s/你的ID/exec"; 
 
         queryBtn.onclick = function() {
@@ -46,7 +49,6 @@
             }
             resultArea.innerHTML = '查詢中...';
 
-            // 改用 fetch 方式，這是在 GitHub 上執行的關鍵
             fetch(`${GAS_URL}?name=${encodeURIComponent(name)}`)
                 .then(response => response.json())
                 .then(result => {
@@ -63,9 +65,17 @@
                     }
                 })
                 .catch(err => {
-                    resultArea.innerHTML = '<div class="error">連線失敗，請檢查網址</div>';
+                    resultArea.innerHTML = '<div class="error">連線失敗，請檢查網址或連線狀態</div>';
+                    console.error(err);
                 });
         };
+
+        // 支援按 Enter 鍵查詢
+        nameInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                queryBtn.click();
+            }
+        });
     </script>
 </body>
 </html>
