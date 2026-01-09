@@ -1,65 +1,73 @@
-// 請將此替換為你部署的 Google Apps Script API 的 URL。
-// 這個 URL 將用於處理試算表查詢。
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwNbnaqqQlcDEWHZrEKW-4EusOqFDFXyGtXNeVys9jPlZMGbyxi6ius-o-GMFrrDYlI/exec'; 
- 
-// 取得網頁上的 HTML 元素參考
-const nameInput = document.getElementById('nameInput');
-const queryButton = document.getElementById('queryButton');
-const resultDiv = document.getElementById('result');
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>線上捐款查詢</title>
+    <style>
+        body { font-family: '微軟正黑體', sans-serif; background-color: #f6deb9; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background-color: #fff; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
+        h1 { color: #4e167d; font-size: 1.4em; }
+        input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 1em; }
+        button { width: 100%; padding: 12px; background-color: #4e167d; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: bold; }
+        button:hover { background-color: #350f55; }
+        #resultArea { margin-top: 20px; }
+        /* 每一筆紀錄的卡片樣式 */
+        .record-card { background-color: #fffcf5; border: 1px solid #f6deb9; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+        .name-label { font-weight: bold; color: #333; }
+        .amount-label { color: #0056b3; font-weight: bold; }
+        .error { color: #dc3545; padding: 10px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>紫皇天乙真慶宮</h1>
+        <p style="color: #777;">建宮福田會 線上查詢系統</p>
+        
+        <input type="text" id="nameInput" placeholder="請輸入姓名或企業名稱">
+        <button id="queryBtn">立即查詢</button>
+        
+        <div id="resultArea"></div>
+    </div>
 
-// 為查詢按鈕添加點擊事件監聽器
-queryButton.addEventListener('click', queryData);
+    <script>
+        const nameInput = document.getElementById('nameInput');
+        const queryBtn = document.getElementById('queryBtn');
+        const resultArea = document.getElementById('resultArea');
 
-// 允許在輸入框中按 Enter 鍵觸發查詢
-nameInput.addEventListener('keypress', function(event) {
-    if (event.key === 'Enter') {
-        queryData();
-    }
-});
+        queryBtn.onclick = function() {
+            const name = nameInput.value.trim();
+            if (!name) {
+                resultArea.innerHTML = '<div class="error">請輸入姓名</div>';
+                return;
+            }
 
-/**
- * 執行資料查詢的非同步函式。
- * 它會向 Apps Script API 發送請求，並在網頁上顯示查詢結果。
- */
-async function queryData() {
-    const name = nameInput.value.trim(); // 取得輸入框中的值，並移除前後空白
-    resultDiv.innerHTML = ''; // 清空之前的查詢結果
+            resultArea.innerHTML = '查詢中...';
 
-    if (!name) {
-        resultDiv.innerHTML = '<span class="error">請輸入姓名才能查詢喔！</span>';
-        resultDiv.style.color = '#dc3545';
-        return;
-    }
-
-    // 顯示載入中的訊息
-    resultDiv.innerHTML = '查詢中...';
-    resultDiv.style.color = '#555';
-
-    try {
-        // 使用 fetch API 向你的 Apps Script URL 發送 GET 請求
-        // 將查詢的姓名作為 URL 參數傳遞 (例如: ?name=張三)
-        const response = await fetch(`${APPS_SCRIPT_URL}?name=${encodeURIComponent(name)}`);
-
-        // 檢查 HTTP 回應是否成功 (例如 HTTP 狀態碼 200 OK)
-        if (!response.ok) {
-            throw new Error(`網路回應錯誤: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json(); // 解析 Apps Script 返回的 JSON 格式資料
-
-        if (data.found) {
-            // 如果找到資料，顯示姓名和金額
-            resultDiv.innerHTML = `姓名：${data.name}<br>金額：${data.amount}`;
-            resultDiv.style.color = '#0056b3';
-        } else {
-            // 如果找不到資料，顯示找不到的訊息
-            resultDiv.innerHTML = `<span class="error">找不到姓名為「${name}」的資料。</span>`;
-            resultDiv.style.color = '#dc3545';
-        }
-    } catch (error) {
-        // 捕獲並處理查詢過程中可能發生的任何錯誤 (例如網路連線問題)
-        console.error('查詢失敗:', error);
-        resultDiv.innerHTML = '<span class="error">查詢失敗，請檢查網路或稍後再試。</span>';
-        resultDiv.style.color = '#dc3545';
-    }
-}
+            // 呼叫後端 searchSheet 函式
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    resultArea.innerHTML = ''; // 清空
+                    
+                    if (result.found) {
+                        // 【關鍵】用迴圈把 list 裡面的每一筆資料都印出來
+                        result.list.forEach(function(item) {
+                            const card = document.createElement('div');
+                            card.className = 'record-card';
+                            card.innerHTML = `
+                                <span class="name-label">${item.name}</span>
+                                <span class="amount-label">${Number(item.amount).toLocaleString()} 元</span>
+                            `;
+                            resultArea.appendChild(card);
+                        });
+                    } else {
+                        resultArea.innerHTML = `<div class="error">查無「${name}」的紀錄</div>`;
+                    }
+                })
+                .withFailureHandler(function() {
+                    resultArea.innerHTML = '<div class="error">系統連線失敗</div>';
+                })
+                .searchSheet(name);
+        };
+    </script>
+</body>
+</html>
